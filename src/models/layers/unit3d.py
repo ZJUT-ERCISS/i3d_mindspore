@@ -18,11 +18,7 @@ from typing import Optional, Union, Tuple
 
 from mindspore import nn
 
-from src.utils.six_padding import six_padding
-from src.utils.class_factory import ClassFactory, ModuleType
 
-
-@ClassFactory.register(ModuleType.LAYER)
 class Unit3D(nn.Cell):
     """
     Conv3d fused with normalization and activation blocks definition.
@@ -30,23 +26,23 @@ class Unit3D(nn.Cell):
     Args:
         in_channels (int):  The number of channels of input frame images.
         out_channels (int):  The number of channels of output frame images.
-        kernel_size (tuple): The size of the conv3d kernel.
-        stride (Union[int, Tuple[int]]): Stride size for the first convolutional layer. Default: 1.
+        kernel_size (Union[int, Tuple[int]]): The size of the conv3d kernel. Default: (3, 3, 3).
+        stride (Union[int, Tuple[int]]): Stride size for the first convolutional layer. Default: (1, 1, 1).
         pad_mode (str): Specifies padding mode. The optional values are "same", "valid", "pad".
-            Default: "pad".
+            Default: "same".
         padding (Union[int, Tuple[int]]): Implicit paddings on both sides of the input x.
-            If `pad_mode` is "pad" and `padding` is not specified by user, then the padding
-            size will be `(kernel_size - 1) // 2` for C, H, W channel.
-        dilation (Union[int, Tuple[int]]): Specifies the dilation rate to use for dilated
-            convolution. Default: 1
-        group (int): Splits filter into groups, in_channels and out_channels must be divisible
-            by the number of groups. Default: 1.
+            If `pad_mode` is "pad" and `padding` is not specified by user, then the padding size will be
+            `(kernel_size - 1) // 2` for C, H, W channel.
+        dilation (Union[int, Tuple[int]]): Specifies the dilation rate to use for dilated convolution.
+            Default: 1
+        group (int): Splits filter into groups, in_channels and out_channels must be divisible by the number
+            of groups. Default: 1.
         activation (Optional[nn.Cell]): Activation function which will be stacked on top of the
             normalization layer (if not None), otherwise on top of the conv layer. Default: nn.ReLU.
         norm (Optional[nn.Cell]): Norm layer that will be stacked on top of the convolution
             layer. Default: nn.BatchNorm3d.
-        pooling (Optional[nn.Cell]): Pooling layer (if not None) will be stacked on top of all the
-            former layers. Default: None.
+        pooling (Optional[nn.Cell]): Pooling layer (if not None) will be stacked on top of all the former layers.
+            Default: None.
         has_bias (bool): Whether to use Bias.
 
     Returns:
@@ -59,9 +55,9 @@ class Unit3D(nn.Cell):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, Tuple[int]] = 3,
-                 stride: Union[int, Tuple[int]] = 1,
-                 pad_mode: str = 'pad',
+                 kernel_size: Union[int, Tuple[int]] = (3, 3, 3),
+                 stride: Union[int, Tuple[int]] = (1, 1, 1),
+                 pad_mode: str = 'same',
                  padding: Union[int, Tuple[int]] = 0,
                  dilation: Union[int, Tuple[int]] = 1,
                  group: int = 1,
@@ -71,10 +67,6 @@ class Unit3D(nn.Cell):
                  has_bias: bool = False
                  ) -> None:
         super().__init__()
-        if pad_mode == 'pad' and padding == 0:
-            padding = tuple((k - 1) // 2 for k in six_padding(kernel_size))
-        else:
-            padding = 0
         layers = [nn.Conv3d(in_channels=in_channels,
                             out_channels=out_channels,
                             kernel_size=kernel_size,
@@ -98,7 +90,6 @@ class Unit3D(nn.Cell):
         self.features = nn.SequentialCell(layers)
 
     def construct(self, x):
-        """ construct unit3d"""
         output = self.features(x)
         if self.pooling:
             output = self.pooling(output)

@@ -29,12 +29,28 @@ class ModuleType:
     # models
     MODEL = 'model'
     LAYER = 'layer'
+    BACKBONE = 'backbone'
+    CLASSIFIER = 'classifier'
+    RECOGNIZER = 'recognizer'
+    DETECTOR = 'detector'
+    HEAD = 'head'
+    NECK = 'neck'
+    EMBEDDING = 'embedding'
+    ANCHOR_GENERATOR = 'Anchor generator'
+    DETECTION_ENGINE = 'detection_engine'
+    GENERATOR = 'generator'
+    DISCRIMINATOR = 'discriminator'
+    ENCODER = 'encoder'
 
     # train
     LOSS = 'loss'
     LR_SCHEDULE = 'lr_schedule'
     OPTIMIZER = 'optimizer'
 
+    # bbox
+    BBOX_ASSIGNERS = 'bbox_assigner'
+    BBOX_SAMPLERS = 'bbox_sampler'
+    BBOX_CODERS = 'bbox_coder'
     GENERAL = 'general'
     WRAPPER = 'wrapper'
 

@@ -25,10 +25,11 @@ from mindspore.train import Model
 from mindspore.train.callback import ModelCheckpoint, CheckpointConfig, LossMonitor
 
 
-from src.data.kinetics400 import Kinetic400
-from src.models.i3d import I3D
-from src.data.transforms import VideoToTensor, VideoRandomCrop, VideoRandomHorizontalFlip, VideoResize
-from src.schedule.lr_schedule import warmup_step_lr
+from src.data import Kinetic400
+from src.models import i3d
+from src.data.transforms.video_to_tensor import VideoToTensor
+from src.data.transforms import VideoRandomCrop, VideoRandomHorizontalFlip, VideoResize
+from src.engine.lr_schedule.lr_schedule import warmup_step_lr
 
 
 
@@ -77,7 +78,7 @@ def i3d_rgb_train(args_opt):
     step_size = dataset_train.get_dataset_size()
 
     # Create model.
-    network = I3D()
+    network = i3d()
 
     if args_opt.pretrained:
         param_dict = load_checkpoint(args_opt.pretrained_model_dir)

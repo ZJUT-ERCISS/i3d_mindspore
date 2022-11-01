@@ -18,14 +18,14 @@ import argparse
 
 from mindspore import context, load_checkpoint, load_param_into_net
 from mindspore import nn
+
 from mindspore.nn import SoftmaxCrossEntropyWithLogits
 from mindspore.train import Model
 
-from src.data.Kinetic400 import Kinetic400
-from src.models.i3d import I3D
-from src.data.transforms import VideoToTensor,VideoCenterCrop, VideoShortEdgeResize
-
-
+from src.data import transforms
+from src.data import Kinetic400
+from src.models import i3d_rgb
+from src.utils.callbacks import EvalLossMonitor
 
 def i3d_rgb_eval(args_opt):
     """I3D eval."""
@@ -33,21 +33,22 @@ def i3d_rgb_eval(args_opt):
 
     # Data Pipeline.
     dataset_eval = Kinetic400(path=args_opt.dataset_path,
-                              batch_size=args_opt.batch_size,
-                              split='val',
-                              shuffle=True,
-                              seq=64,
-                              num_parallel_workers=args_opt.num_parallel_workers,
+                              split='test',
+                              seq=args.seq,
                               seq_mode='discrete',
+                              batch_size=args_opt.batch_size,
+                              shuffle=False,
+                              num_parallel_workers=args_opt.num_parallel_workers,
+                              frame_interval=1
                               )
-    transforms = [VideoShortEdgeResize(256),
-                  VideoCenterCrop([224, 224]),
-                  VideoToTensor()]
-    dataset_eval.transform = transforms
+    dataset_transforms = [transforms.VideoShortEdgeResize(size=256, interpolation='linear'),
+                          transforms.VideoCenterCrop([224, 224]),
+                          transforms.VideoToTensor()]
+    dataset_eval.transform = dataset_transforms
     dataset_eval = dataset_eval.run()
 
     # Create model.
-    network = I3D()
+    network = i3d_rgb()
 
     if args_opt.pretrained:
         param_dict = load_checkpoint(args_opt.pretrained_model_dir)
@@ -62,10 +63,10 @@ def i3d_rgb_eval(args_opt):
 
     # Init the model.
     model = Model(network, loss_fn=network_loss, metrics=eval_metrics)
-
+    print_cb = EvalLossMonitor(model)
     # Begin to train.
     print('[Start eval `{}`]'.format(args_opt.model_name))
-    result = model.eval(dataset_eval, dataset_sink_mode=args_opt.dataset_sink_mode)
+    result = model.eval(dataset_eval,callbacks=[print_cb], dataset_sink_mode=args_opt.dataset_sink_mode)
     print(result)
 
 
@@ -73,13 +74,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="I3d_grb Eval.")
     parser.add_argument('--device_target', type=str, default="GPU", choices=["Ascend", "GPU", "CPU"])
     parser.add_argument('--seq', type=int, default=64, help='Number of frames of captured video.')
-    parser.add_argument("--dataset_path", type=str, default="/home/publicfile/kinetics-dataset")
+    parser.add_argument("--dataset_path", type=str, default="/home/publicfile/kinetics-400")
     parser.add_argument("--model_name", type=str, default="i3d_rgb")
-    parser.add_argument("--device_id", type=int, default=3)
+    parser.add_argument("--device_id", type=int, default=1)
     parser.add_argument("--pretrained", type=bool, default=True, help="Load pretrained model.")
     parser.add_argument("--batch_size", type=int, default=1, help="Number of batch size.")
     parser.add_argument("--pretrained_model_dir", type=str,
-                        default=".vscode/ms_ckpt/tf2ms_i3d_rgb_imagenet.ckpt",
+                        default="/home/zhengs/i3d_mindspore-main/script/i3d_rgb_kinetics400.ckpt",
                         help="Location of Pretrained Model.")
     parser.add_argument("--dataset_sink_mode", default=False, help="The dataset sink mode.")
     parser.add_argument("--num_parallel_workers", type=int, default=1, help="Number of parallel workers.")

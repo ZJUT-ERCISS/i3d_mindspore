@@ -26,7 +26,7 @@ context:
 
 # Model settings.
 model:
-    type: i3d_rgb 
+    type: I3D 
     num_classes: 400
 
 
@@ -65,7 +65,7 @@ eval:
     pretrained_model: ""
 
 infer:
-    pretrained_model: ""
+    pretrained_model: "/home/zhengs/i3d_mindspore-main/script/i3d_rgb_kinetics400.ckpt"
     batch_size: 16
     image_path: ""
     normalize: True
@@ -99,11 +99,11 @@ data_loader:
     eval:
         dataset:
             type: Kinetic400
-            path: "/home/publicfile/kinetics-dataset"
+            path: "/home/publicfile/kinetics-400"
             split: 'val'
             seq: 64
-            shuffle: Ture
-            num_parallel_workers: 8
+            shuffle: True
+            num_parallel_workers: 1
             seq_mode: 'discrete'
             
         map:
