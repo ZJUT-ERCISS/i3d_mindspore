@@ -53,7 +53,7 @@ loss:
 
 train:
     pre_trained: False
-    pretrained_model: ""
+    pretrained_model: /home/zhangb/i3d_mindspore-main/src/ckpt/i3d_rgb_kinetics400.ckpt
     ckpt_path: "./output/"
     epochs: 100
     save_checkpoint_epochs: 5
@@ -62,10 +62,10 @@ train:
     run_distribute: False
 
 eval:
-    pretrained_model: ""
+    pretrained_model: /home/zhangb/i3d_mindspore-main/src/ckpt/i3d_rgb_kinetics400.ckpt
 
 infer:
-    pretrained_model: "/home/zhengs/i3d_mindspore-main/script/i3d_rgb_kinetics400.ckpt"
+    pretrained_model: /home/zhangb/i3d_mindspore-main/src/ckpt/i3d_rgb_kinetics400.ckpt
     batch_size: 16
     image_path: ""
     normalize: True
@@ -81,7 +81,7 @@ data_loader:
               shuffle: True
               split: 'train'
               seq: 64
-              num_parallel_workers: 8
+              num_parallel_workers: 1
               shuffle: True
               batch_size: 16
               
